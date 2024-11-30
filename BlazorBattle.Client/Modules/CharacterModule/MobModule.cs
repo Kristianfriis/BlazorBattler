@@ -1,4 +1,4 @@
-namespace BlazorBattle.Client.Modules;
+namespace BlazorBattle.Client.Modules.CharacterModule;
 
 /// <summary>
 /// This module handles all the mob related logic.

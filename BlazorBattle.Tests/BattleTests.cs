@@ -1,5 +1,7 @@
 using BlazorBattle.Client.Models;
 using BlazorBattle.Client.Modules;
+using BlazorBattle.Client.Modules.BattleModule;
+using BlazorBattle.Client.Modules.BattleModule.Models;
 
 namespace BlazorBattle.Tests;
 

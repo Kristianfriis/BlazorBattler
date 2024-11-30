@@ -1,6 +1,4 @@
-using System;
-
-namespace BlazorBattle.Client.Models;
+namespace BlazorBattle.Client.Modules.DungeonModule.Models;
 
 public class Tile
 {

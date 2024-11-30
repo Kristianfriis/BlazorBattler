@@ -1,42 +1,6 @@
-using BlazorBattle.Client.Models;
+﻿using BlazorBattle.Client.Models;
 
-namespace BlazorBattle.Client.Modules;
-
-/// <summary>
-/// This module handles all the battle related logic.
-/// All data in this is transient, and will be lost when the server is restarted.
-/// If a battle is not finished, it will be saved in the list of current battles.
-/// </summary>
-public class BattleModule
-{
-    private readonly List<Battle> CurrentBattles = new();
-    
-    public void AddTurnToBattle(Guid battleId, BattleTurn battleTurn)
-    {
-        var battle = CurrentBattles.FirstOrDefault(x => x.Id == battleId);
-        if (battle == null)
-            return;
-        
-        battle.AddBattleTurn(battleTurn);
-    }
-    
-    public BattleTurnResponse HandleTurn(Guid battleId)
-    {
-        var battle = CurrentBattles.FirstOrDefault(x => x.Id == battleId);
-        if (battle == null)
-            return new BattleTurnResponse();
-     
-        //if (battle.IsFinished) handle end of battle
-        // battle is ended if all characters of one side are dead
-        // the victors will get the experience points from the losers
-        
-        //Handle if any victors leveled up
-        
-        // the battle will be removed from the list of current battles
-        
-        return battle.HandleTurn();
-    }
-}
+namespace BlazorBattle.Client.Modules.BattleModule.Models;
 
 public class Battle
 {
@@ -47,6 +11,8 @@ public class Battle
     public bool IsFinished { get; set; }
     public List<BattleTurn> CurrentBattleTurns { get; set; } = new();
     public int TurnNumber { get; set; }
+    
+    public bool IsMobBattle => Characters.FirstOrDefault(x => x.Mob) is not null;
     
     public Battle(List<Character> characters)
     {
@@ -187,27 +153,5 @@ public class Battle
     public void AddBattleTurn(BattleTurn battleTurn)
     {
         CurrentBattleTurns.Add(battleTurn);
-    }
-}
-
-public class BattleTurnResponse
-{
-    public List<Character> Characters { get; set; }
-    public List<string> BattleLog { get; set; }
-}
-
-public class BattleTurn
-{
-    public Guid Owner { get; set; }
-    public Guid Target { get; set; }
-    public IAction Action { get; set; }
-    public int Speed { get; set; }
-    
-    public BattleTurn(Guid attacker, Guid opponent, IAction action)
-    {
-        Owner = attacker;
-        Target = opponent;
-        Action = action;
-        Speed = action.Speed;
     }
 }
