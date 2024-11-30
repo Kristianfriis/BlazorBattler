@@ -1,0 +1,115 @@
+@page "/dungeon"
+
+<h3>Dungeon Crawler</h3>
+
+<div class="dungeon-grid">
+@for (int y = 0; y < Dungeon.Length; y++)
+{
+    <div class="dungeon-row">
+        @for (int x = 0; x < Dungeon.Width; x++)
+        {
+            bool isVisible = Math.Abs(Player.Y - y) <= 1;
+            <span class="dungeon-cell @(isVisible ? "" : "fog") @(Player.X == x && Player.Y == y ? "player" : "")">
+                @Dungeon.Grid[x, y]
+            </span>
+        }
+    </div>
+}
+</div>
+
+    <button @onclick="() => Move('w')">Up</button>
+    <button @onclick="() => Move('a')">Left</button>
+    <button @onclick="() => Move('s')">Down</button>
+    <button @onclick="() => Move('d')">Right</button>
+
+@code {
+    private DungeonTest Dungeon { get; set; } = new(10);
+    private PlayerTest Player { get; set; } = new(0,2);
+    private void Move(char direction)
+    {
+        Player.Move(direction, Dungeon);
+    }
+    
+    public class Monster
+    {
+        public string Name { get; set; }
+        public int Health { get; set; }
+        public int AttackPower { get; set; }
+
+        public Monster(string name, int health, int attackPower)
+        {
+            Name = name;
+            Health = health;
+            AttackPower = attackPower;
+        }
+    }
+
+    public class DungeonTest
+    {
+        public int Width { get; } = 3;
+        public int Length { get; }
+        public char[,] Grid { get; }
+        public Dictionary<(int, int), Monster> Monsters { get; }
+
+        public DungeonTest(int length)
+        {
+            Length = length;
+            Grid = new char[Width, Length];
+            Monsters = new Dictionary<(int, int), Monster>();
+            GenerateDungeon();
+        }
+
+        private void GenerateDungeon()
+        {
+            var random = new Random();
+            for (int x = 0; x < Width; x++)
+            {
+                for (int y = 0; y < Length; y++)
+                {
+                    Grid[x, y] = ' ';
+                }
+            }
+
+            // Example: Place random monsters
+            Monsters[(1, random.Next(Length))] = new Monster("Goblin", 30, 5);
+        }
+    }
+    
+    public class PlayerTest
+    {
+        public int X { get; set; }
+        public int Y { get; set; }
+
+        public PlayerTest(int startX, int startY)
+        {
+            X = startX;
+            Y = startY;
+        }
+
+        public void Move(char direction, DungeonTest dungeon)
+        {
+            switch (direction)
+            {
+                case 'w':
+                    if (Y > 0) Y--;
+                    break;
+                case 's':
+                    if (Y < dungeon.Length - 1) Y++;
+                    break;
+                case 'a':
+                    if (X > 0) X--;
+                    break;
+                case 'd':
+                    if (X < dungeon.Width - 1) X++;
+                    break;
+            }
+
+            if (dungeon.Monsters.TryGetValue((X, Y), out var monster))
+            {
+                Console.WriteLine($"Encountered a {monster.Name}!");
+                // Trigger battle or encounter logic here
+            }
+        }
+    }
+
+}
