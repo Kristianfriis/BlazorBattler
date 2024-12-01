@@ -1,0 +1,132 @@
+﻿@page "/Dungeon3"
+@using BlazorBattle.Client.Modules.DungeonModule.Models
+
+<div class="game-container" tabindex="0" @onkeydown="HandleKeyDown">
+    <div class="grid">
+        @for (int row = 0; row < visibleRows; row++)
+        {
+            <div class="row">
+                @for (int col = 0; col < visibleColumns; col++)
+                {
+                    var tileX = playerX - 3 + col;
+                    var tileY = playerY - 3 + row;
+
+                    <div class="tile @RenderTileClass(tileX, tileY)">
+                        @RenderTile(tileX, tileY)
+                    </div>
+                }
+            </div>
+        }
+    </div>
+    <div class="player" style="left: @(playerX * tileSize)px; top: @(playerY * tileSize)px;"></div>
+</div>
+
+@code {
+    private const int visibleRows = 7;
+    private const int visibleColumns = 7;
+    
+    private const int tileSize = 64; // Assuming each tile is 64px x 64px
+    
+    private int playerX = 0;
+    private int playerY = 0;
+
+    private Dictionary<(int, int), GameTile> worldTiles = new();
+    private (int X, int Y)? treasurePosition;
+
+    protected override void OnInitialized()
+    {
+        LoadWorld();
+        PlaceTreasure();
+    }
+
+    private void LoadWorld()
+    {
+        // Generate grid with Tile objects
+        for (int x = -10; x <= 10; x++)
+        {
+            for (int y = -10; y <= 50; y++)
+            {
+                var type = (x == -5 || x == 5) && y > -5 && y < 5 ? TileTypes.Wall :
+                    (x + y) % 2 == 0 ? TileTypes.Grass : TileTypes.Stone;
+                worldTiles[(x, y)] = new GameTile(type);
+            }
+        }
+    }
+
+    private void PlaceTreasure()
+    {
+        var random = new Random();
+        int x, y;
+        do
+        {
+            x = random.Next(-10, 11);
+            y = random.Next(-10, 51);
+        } while (!worldTiles[(x, y)].IsPassable || (x == playerX && y == playerY));
+
+        treasurePosition = (x, y);
+        worldTiles[treasurePosition.Value] = new GameTile(TileTypes.Treasure);
+    }
+
+    private string RenderTile(int x, int y)
+    {
+        return worldTiles.TryGetValue((x, y), out var tile) ? tile.ToString() : "void";
+    }
+
+    private string RenderTileClass(int x, int y)
+    {
+        return RenderTile(x, y);
+    }
+
+    private void HandleKeyDown(KeyboardEventArgs e)
+    {
+        int newX = playerX;
+        int newY = playerY;
+
+        switch (e.Key)
+        {
+            case "ArrowUp":
+                newY--;
+                break;
+            case "ArrowDown":
+                newY++;
+                break;
+            case "ArrowLeft":
+                newX--;
+                break;
+            case "ArrowRight":
+                newX++;
+                break;
+        }
+
+        if (CanMoveTo(newX, newY))
+        {
+            playerX = newX;
+            playerY = newY;
+
+            if (IsTreasure(newX, newY))
+            {
+                CollectTreasure();
+            }
+
+            StateHasChanged();
+        }
+    }
+
+    private bool CanMoveTo(int x, int y)
+    {
+        return worldTiles.TryGetValue((x, y), out var tile) && tile.IsPassable;
+    }
+
+    private bool IsTreasure(int x, int y)
+    {
+        return worldTiles.TryGetValue((x, y), out var tile) && tile.Type == TileTypes.Treasure;
+    }
+
+    private void CollectTreasure()
+    {
+        worldTiles[treasurePosition.Value] = new GameTile(TileTypes.Grass); // Replace with default tile
+        treasurePosition = null;
+        Console.WriteLine("Treasure collected!");
+    }
+
+}
