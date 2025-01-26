@@ -1,0 +1,61 @@
+﻿@inject IServiceProvider ServiceProvider
+
+<div class="parent" tabindex="0" @onkeydown="ControlDirection">
+    <GameObjectComponent GameObject="_player"></GameObjectComponent>
+</div>
+
+<style>
+    .parent {
+        position: relative; /* Ensure the parent is the positioning context */
+        width: @(width)px;
+        height: @(height)px;
+        background-color: lightgray;
+    }
+</style>
+
+
+@code {
+    private int height = 400;
+    private int width = 400;
+
+    private GameObject? _player;
+
+    protected override void OnInitialized()
+    {
+        _player = new GameObject(50, 50, 50, ServiceProvider);
+
+        var gameServiceInstance = ServiceProvider.GetService<IGameService>();
+        if (gameServiceInstance is not null)
+        {
+            gameServiceInstance.CanvasHeight = height;
+            gameServiceInstance.CanvasWidth = width;
+        }
+    }
+
+    private void ControlDirection(KeyboardEventArgs e)
+    {
+        var inputService = ServiceProvider.GetService<IInputService>();
+        if (inputService is null)
+            return;
+        
+        switch (e.Key)
+        {
+            case "ArrowUp":
+                inputService.Direction = Direction.Up;
+                break;
+            case "ArrowRight":
+                inputService.Direction = Direction.Right;
+                break;
+            case "ArrowDown":
+                inputService.Direction = Direction.Down;
+                break;
+            case "ArrowLeft":
+                inputService.Direction = Direction.Left;
+                break;
+        }
+        
+        _player?.UpdatePosition();
+        
+        // StateHasChanged();
+    }
+}

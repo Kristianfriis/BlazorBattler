@@ -1,0 +1,16 @@
+﻿<div class="object"></div>
+
+<style>
+    .object {
+        position: absolute; /* Use absolute positioning for the child */
+        width: @(GameObject?.HitBoxWidth)px;
+        height: @(GameObject?.HitBoxHeight)px;
+        background-color: steelblue;
+        top: @(GameObject?.PosY)px; 
+        left:  @(GameObject?.PosX)px
+    }
+</style>
+
+@code {
+    [Parameter] public GameObject? GameObject { get; set; }
+}
